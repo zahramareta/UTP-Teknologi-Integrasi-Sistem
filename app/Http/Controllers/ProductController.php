@@ -28,7 +28,16 @@ class ProductController extends Controller
     )]
     public function index()
     {
-        return response()->json($this->products);
+        try {
+
+            return response()->json($this->products);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Terjadi kesalahan',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[OA\Get(
@@ -54,15 +63,25 @@ class ProductController extends Controller
     )]
     public function show($id)
     {
-        foreach ($this->products as $product) {
-            if ($product['id'] == $id) {
-                return response()->json($product);
-            }
-        }
+        try {
 
-        return response()->json([
-            'message' => 'Produk tidak ditemukan'
-        ], 404);
+            foreach ($this->products as $product) {
+
+                if ($product['id'] == $id) {
+                    return response()->json($product);
+                }
+            }
+
+            return response()->json([
+                'message' => "Item dengan ID $id tidak ditemukan"
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Terjadi kesalahan',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[OA\Post(
@@ -88,23 +107,32 @@ class ProductController extends Controller
     )]
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:100',
-            'harga' => 'required|numeric',
-            'stock' => 'required|integer'
-        ]);
+        try {
 
-        $newProduct = [
-            'id' => count($this->products) + 1,
-            'nama' => $validated['nama'],
-            'harga' => $validated['harga'],
-            'stock' => $validated['stock']
-        ];
+            $validated = $request->validate([
+                'nama' => 'required|string|max:100',
+                'harga' => 'required|numeric',
+                'stock' => 'required|integer'
+            ]);
 
-        return response()->json([
-            'message' => 'Produk berhasil ditambahkan',
-            'data' => $newProduct
-        ], 201);
+            $newProduct = [
+                'id' => count($this->products) + 1,
+                'nama' => $validated['nama'],
+                'harga' => $validated['harga'],
+                'stock' => $validated['stock']
+            ];
+
+            return response()->json([
+                'message' => 'Produk berhasil ditambahkan',
+                'data' => $newProduct
+            ], 201);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Gagal menambahkan produk',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[OA\Put(
@@ -135,31 +163,45 @@ class ProductController extends Controller
         response: 200,
         description: "Produk berhasil diupdate"
     )]
+    #[OA\Response(
+        response: 404,
+        description: "Produk tidak ditemukan"
+    )]
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:100',
-            'harga' => 'required|numeric',
-            'stock' => 'required|integer'
-        ]);
+        try {
 
-        foreach ($this->products as &$product) {
-            if ($product['id'] == $id) {
+            $validated = $request->validate([
+                'nama' => 'required|string|max:100',
+                'harga' => 'required|numeric',
+                'stock' => 'required|integer'
+            ]);
 
-                $product['nama'] = $validated['nama'];
-                $product['harga'] = $validated['harga'];
-                $product['stock'] = $validated['stock'];
+            foreach ($this->products as &$product) {
 
-                return response()->json([
-                    'message' => 'Produk berhasil diupdate',
-                    'data' => $product
-                ]);
+                if ($product['id'] == $id) {
+
+                    $product['nama'] = $validated['nama'];
+                    $product['harga'] = $validated['harga'];
+                    $product['stock'] = $validated['stock'];
+
+                    return response()->json([
+                        'message' => 'Produk berhasil diupdate',
+                        'data' => $product
+                    ]);
+                }
             }
-        }
 
-        return response()->json([
-            'message' => 'Produk tidak ditemukan'
-        ], 404);
+            return response()->json([
+                'message' => "Item dengan ID $id tidak ditemukan"
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Gagal update produk',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[OA\Patch(
@@ -188,27 +230,41 @@ class ProductController extends Controller
         response: 200,
         description: "Stock berhasil diupdate"
     )]
+    #[OA\Response(
+        response: 404,
+        description: "Produk tidak ditemukan"
+    )]
     public function updateStock(Request $request, $id)
     {
-        $validated = $request->validate([
-            'stock' => 'required|integer'
-        ]);
+        try {
 
-        foreach ($this->products as &$product) {
-            if ($product['id'] == $id) {
+            $validated = $request->validate([
+                'stock' => 'required|integer'
+            ]);
 
-                $product['stock'] = $validated['stock'];
+            foreach ($this->products as &$product) {
 
-                return response()->json([
-                    'message' => 'Stock berhasil diupdate',
-                    'data' => $product
-                ]);
+                if ($product['id'] == $id) {
+
+                    $product['stock'] = $validated['stock'];
+
+                    return response()->json([
+                        'message' => 'Stock berhasil diupdate',
+                        'data' => $product
+                    ]);
+                }
             }
-        }
 
-        return response()->json([
-            'message' => 'Produk tidak ditemukan'
-        ], 404);
+            return response()->json([
+                'message' => "Item dengan ID $id tidak ditemukan"
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Gagal update stock',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[OA\Delete(
@@ -228,22 +284,35 @@ class ProductController extends Controller
         response: 200,
         description: "Produk berhasil dihapus"
     )]
+    #[OA\Response(
+        response: 404,
+        description: "Produk tidak ditemukan"
+    )]
     public function destroy($id)
     {
-        foreach ($this->products as $key => $product) {
+        try {
 
-            if ($product['id'] == $id) {
+            foreach ($this->products as $key => $product) {
 
-                unset($this->products[$key]);
+                if ($product['id'] == $id) {
 
-                return response()->json([
-                    'message' => "Produk dengan ID $id berhasil dihapus"
-                ]);
+                    unset($this->products[$key]);
+
+                    return response()->json([
+                        'message' => "Produk dengan ID $id berhasil dihapus"
+                    ]);
+                }
             }
-        }
 
-        return response()->json([
-            'message' => 'Produk tidak ditemukan'
-        ], 404);
+            return response()->json([
+                'message' => "Item dengan ID $id tidak ditemukan"
+            ], 404);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'Gagal menghapus produk',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
