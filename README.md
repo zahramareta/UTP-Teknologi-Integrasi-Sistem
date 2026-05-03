@@ -57,3 +57,20 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# API Manajemen Produk
+
+## Deskripsi
+API ini digunakan untuk manajemen produk menggunakan Laravel tanpa database.
+
+## Dokumentasi Swagger
+Jalankan project lalu buka:
+http://127.0.0.1:8000/api/documentation
+
+## Endpoint
+- GET /api/products
+- GET /api/products/{id}
+- POST /api/products
+- PUT /api/products/{id}
+- PATCH /api/products/{id}
+- DELETE /api/products/{id}
